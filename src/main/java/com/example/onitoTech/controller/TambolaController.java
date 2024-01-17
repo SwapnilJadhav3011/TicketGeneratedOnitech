@@ -1,4 +1,5 @@
 package com.example.onitoTech.controller;
+
 import com.example.onitoTech.model.TambolaTicket;
 import com.example.onitoTech.service.TambolaTicketService;
 
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.util.List;
 
@@ -24,11 +24,14 @@ public class TambolaController {
     private TambolaTicketService ticketService;
 
     @PostMapping("/generate")
-    public ResponseEntity<?> generateAndSaveTickets(@RequestParam @Min(1) int numberOfSets) {
+    public ResponseEntity<?> generateAndSaveTickets(@RequestBody @Min(1) int numberOfSets) {
         try {
             List<TambolaTicket> generatedTickets = ticketService.generateAndSaveTickets(numberOfSets);
             logger.info("{} Tambola ticket(s) generated and saved successfully.", numberOfSets);
-            return new ResponseEntity<>(generatedTickets, HttpStatus.CREATED);
+            return new ResponseEntity<>(generatedTickets, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid number of sets: {}", e.getMessage());
+            return new ResponseEntity<>("Invalid number of sets: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             logger.error("Error generating tickets: {}", e.getMessage());
             return new ResponseEntity<>("Error generating tickets: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -36,8 +39,8 @@ public class TambolaController {
     }
 
     @GetMapping("/tickets")
-    public ResponseEntity<List<TambolaTicket>> getAllTickets(@RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<?> getAllTickets(@RequestParam(defaultValue = "0") int page,
+                                           @RequestParam(defaultValue = "10") int size) {
         try {
             List<TambolaTicket> tickets = ticketService.getAllTickets(page, size);
             logger.info("Retrieved {} Tambola ticket(s) successfully.", tickets.size());
@@ -48,6 +51,5 @@ public class TambolaController {
         }
     }
 
-    
+   
 }
-
